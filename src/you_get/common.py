@@ -636,13 +636,22 @@ class PiecesProgressBar:
 
     def update(self):
         self.displayed = True
-        bar = '{0:>5}%[{1:<40}] {2}/{3}'.format('', '=' * 40, self.current_piece, self.total_pieces)
-        sys.stdout.write('\r' + bar)
-        sys.stdout.flush()
+        ratio=(self.received/self.total_size)
+        progress_bar=int(ratio*40)
+
+        bar = '\r{0:>5}%[{1:<40}] {2}/{3}\t{4:.2f}%'.format('',
+                                                            '=' * progress_bar,
+                                                            self.current_piece,
+                                                            self.total_pieces,
+                                                            ratio*100)
+
+        color.print_info(bar,end='',flush=True)
+
 
     def update_received(self, n):
         self.received += n
         self.update()
+        #print('({0}/{1})'.format(self.received,self.total_size))
 
     def update_piece(self, n):
         self.current_piece = n
@@ -715,16 +724,19 @@ def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merg
             print()
             return
         bar = SimpleProgressBar(total_size, len(urls))
+        #bar = PiecesProgressBar(total_size, len(urls))
     else:
         bar = PiecesProgressBar(total_size, len(urls))
 
     if len(urls) == 1:
+
         url = urls[0]
         color.print_info('Downloading %s ...' % tr(output_filename))
         bar.update()
         url_save(url, output_filepath, bar, refer = refer, faker = faker, headers = headers)
         bar.done()
     else:
+
         parts = []
         color.print_info('Downloading %s.%s ...' % (tr(title), ext))
         bar.update()

@@ -108,7 +108,7 @@ def UseStyle(obj, fore = '', mode = '', back = ''):
 
     end   = '\033[%sm' % STYLE['default']['end'] if style else ''
 
-    return '%s%s%s' % (style, repr(obj), end)
+    return '%s%s%s' % (style, str(obj), end)
 
 
 

@@ -602,7 +602,7 @@ class SimpleProgressBar:
         bar = self.bar.format(percent, round(self.received / 1048576, 1), bar, self.current_piece, self.total_pieces, self.speed)
         sys.stdout.write('\r' + bar)
         sys.stdout.flush()
-
+        #print('\r'+bar,end='',flush=True)
     def update_received(self, n):
         self.received += n
         time_diff = time.time() - self.last_updated
@@ -729,14 +729,14 @@ def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merg
         bar = PiecesProgressBar(total_size, len(urls))
 
     if len(urls) == 1:
-
+        color.print_err('one url')
         url = urls[0]
         color.print_info('Downloading %s ...' % tr(output_filename))
         bar.update()
         url_save(url, output_filepath, bar, refer = refer, faker = faker, headers = headers)
         bar.done()
     else:
-
+        color.print_err('{0:d} url'.format(len(urls)))
         parts = []
         color.print_info('Downloading %s.%s ...' % (tr(title), ext))
         bar.update()

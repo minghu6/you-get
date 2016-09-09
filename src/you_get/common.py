@@ -8,7 +8,9 @@ SITES = {
     'baidu'            : 'baidu',
     'bandcamp'         : 'bandcamp',
     'baomihua'         : 'baomihua',
+    'bigthink'         : 'bigthink',
     'bilibili'         : 'bilibili',
+    'cctv'             : 'cntv',
     'cntv'             : 'cntv',
     'cbs'              : 'cbs',
     'dailymotion'      : 'dailymotion',
@@ -61,6 +63,7 @@ SITES = {
     'pptv'             : 'pptv',
     'qianmo'           : 'qianmo',
     'qq'               : 'qq',
+    'showroom-live'    : 'showroom',
     'sina'             : 'sina',
     'smgbb'            : 'bilibili',
     'sohu'             : 'sohu',
@@ -76,6 +79,7 @@ SITES = {
     'videomega'        : 'videomega',
     'vidto'            : 'vidto',
     'vimeo'            : 'vimeo',
+    'wanmen'           : 'wanmen',
     'weibo'            : 'miaopai',
     'veoh'             : 'veoh',
     'vine'             : 'vine',
@@ -911,6 +915,22 @@ def download_rtmp_url(url,title, ext,params={}, total_size=0, output_dir='.', re
     assert has_rtmpdump_installed(), "RTMPDump not installed."
     download_rtmpdump_stream(url,  title, ext,params, output_dir)
 
+def download_url_ffmpeg(url,title, ext,params={}, total_size=0, output_dir='.', refer=None, merge=True, faker=False):
+    assert url
+    if dry_run:
+        print('Real URL:\n%s\n' % [url])
+        if params.get("-y",False): #None or unset ->False
+            print('Real Playpath:\n%s\n' % [params.get("-y")])
+        return
+
+    if player:
+        launch_player(player, [url])
+        return
+
+    from .processor.ffmpeg import has_ffmpeg_installed, ffmpeg_download_stream
+    assert has_ffmpeg_installed(), "FFmpeg not installed."
+    ffmpeg_download_stream(url, title, ext, params, output_dir)
+
 def playlist_not_supported(name):
     def f(*args, **kwargs):
         raise NotImplementedError('Playlist is not supported for ' + name)
@@ -1039,6 +1059,22 @@ def set_http_proxy(proxy):
     opener = request.build_opener(proxy_support)
     request.install_opener(opener)
 
+def print_more_compatible(*args, **kwargs):
+    import builtins as __builtin__
+    """Overload default print function as py (<3.3) does not support 'flush' keyword.
+    Although the function name can be same as print to get itself overloaded automatically,
+    I'd rather leave it with a different name and only overload it when importing to make less confusion. """
+    # nothing happens on py3.3 and later
+    if sys.version_info[:2] >= (3, 3):
+        return __builtin__.print(*args, **kwargs)
+
+    # in lower pyver (e.g. 3.2.x), remove 'flush' keyword and flush it as requested
+    doFlush = kwargs.pop('flush', False)
+    ret = __builtin__.print(*args, **kwargs)
+    if doFlush:
+        kwargs.get('file', sys.stdout).flush()
+    return ret
+
 
 
 def download_main(download, download_playlist, urls, playlist, **kwargs):
@@ -1084,12 +1120,13 @@ def script_main(script_name, download, download_playlist, **kwargs):
     -x | --http-proxy <HOST:PORT>       Use an HTTP proxy for downloading.
     -y | --extractor-proxy <HOST:PORT>  Use an HTTP proxy for extracting only.
          --no-proxy                     Never use a proxy.
+    -s | --socks-proxy <HOST:PORT>      Use an SOCKS5 proxy for downloading.
     -t | --timeout <SECONDS>            Set socket timeout.
     -d | --debug                        Show traceback and other debug info.
     '''
 
-    short_opts = 'Vhfiuc:ndF:O:o:p:x:y:t:'
-    opts = ['version', 'help', 'force', 'info', 'url', 'cookies', 'no-caption', 'no-merge', 'no-proxy', 'debug', 'json', 'format=', 'stream=', 'itag=', 'output-filename=', 'output-dir=', 'player=', 'http-proxy=', 'extractor-proxy=', 'lang=', 'timeout=']
+    short_opts = 'Vhfiuc:ndF:O:o:p:x:y:s:t:'
+    opts = ['version', 'help', 'force', 'info', 'url', 'cookies', 'no-caption', 'no-merge', 'no-proxy', 'debug', 'json', 'format=', 'stream=', 'itag=', 'output-filename=', 'output-dir=', 'player=', 'http-proxy=', 'socks-proxy=', 'extractor-proxy=', 'lang=', 'timeout=']
     if download_playlist:
         short_opts = 'l' + short_opts
         opts = ['playlist'] + opts
@@ -1117,6 +1154,7 @@ def script_main(script_name, download, download_playlist, **kwargs):
     lang = None
     output_dir = '.'
     proxy = None
+    socks_proxy = None
     extractor_proxy = None
     traceback = False
     timeout = 600
@@ -1189,6 +1227,8 @@ def script_main(script_name, download, download_playlist, **kwargs):
             caption = False
         elif o in ('-x', '--http-proxy'):
             proxy = a
+        elif o in ('-s', '--socks-proxy'):
+            socks_proxy = a
         elif o in ('-y', '--extractor-proxy'):
             extractor_proxy = a
         elif o in ('--lang',):
@@ -1202,7 +1242,24 @@ def script_main(script_name, download, download_playlist, **kwargs):
         color.print_info(help)
         sys.exit()
 
-    set_http_proxy(proxy)
+    if (socks_proxy):
+        try:
+            import socket
+            import socks
+            socks_proxy_addrs = socks_proxy.split(':')
+            socks.set_default_proxy(socks.SOCKS5,
+                                    socks_proxy_addrs[0],
+                                    int(socks_proxy_addrs[1]))
+            socket.socket = socks.socksocket
+            def getaddrinfo(*args):
+                return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (args[0], args[1]))]
+            socket.getaddrinfo = getaddrinfo
+        except ImportError:
+            log.w('Error importing PySocks library, socks proxy ignored.'
+                'In order to use use socks proxy, please install PySocks.')
+    else:
+        import socket
+        set_http_proxy(proxy)
 
     socket.setdefaulttimeout(timeout)
 

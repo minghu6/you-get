@@ -733,14 +733,14 @@ def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merg
         bar = PiecesProgressBar(total_size, len(urls))
 
     if len(urls) == 1:
-        color.print_err('one url')
+        color.print_info('one url')
         url = urls[0]
         color.print_info('Downloading %s ...' % tr(output_filename))
         bar.update()
         url_save(url, output_filepath, bar, refer = refer, faker = faker, headers = headers)
         bar.done()
     else:
-        color.print_err('{0:d} url'.format(len(urls)))
+        color.print_info('{0:d} url'.format(len(urls)))
         parts = []
         color.print_info('Downloading %s.%s ...' % (tr(title), ext))
         bar.update()

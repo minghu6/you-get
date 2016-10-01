@@ -2,6 +2,7 @@
 
 import struct
 from io import BytesIO
+from ..util.color import color
 
 TAG_TYPE_METADATA = 18
 
@@ -300,7 +301,7 @@ def concat_flv(flvs, output = None):
     elif os.path.isdir(output):
         output = os.path.join(output, guess_output(flvs))
     
-    print('Merging video parts...')
+    color.print_info('Merging video parts...')
     ins = [open(flv, 'rb') for flv in flvs]
     for stream in ins:
         read_flv_header(stream)
@@ -336,7 +337,7 @@ def concat_flv(flvs, output = None):
     return output
 
 def usage():
-    print('Usage: [python3] join_flv.py --output TARGET.flv flv...')
+    color.print_info('Usage: [python3] join_flv.py --output TARGET.flv flv...')
 
 def main():
     import sys, getopt

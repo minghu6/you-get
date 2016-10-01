@@ -182,10 +182,10 @@ def bilibili_download(url, output_dir='.', merge=True, info_only=False, **kwargs
 
     if not info_only and not dry_run:
         if not kwargs['caption']:
-            print('Skipping danmaku.')
+            color.print_info('Skipping danmaku.')
             return
         title = get_filename(title)
-        print('Downloading %s ...\n' % (title + '.cmt.xml'))
+        color.print_info('Downloading %s ...\n' % (title + '.cmt.xml'))
         xml = get_srt_xml(cid)
         with open(os.path.join(output_dir, title + '.cmt.xml'), 'w', encoding='utf-8') as x:
             x.write(xml)

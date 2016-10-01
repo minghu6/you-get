@@ -90,11 +90,11 @@ def netease_lyric_download(song, lyric, output_dir='.', info_only=False):
 
     title = "%s. %s" % (song['position'], song['name'])
     filename = '%s.lrc' % get_filename(title)
-    print('Saving %s ...' % filename, end="", flush=True)
+    color.print_info('Saving %s ...' % filename, end="", flush=True)
     with open(os.path.join(output_dir, filename),
               'w', encoding='utf-8') as x:
         x.write(lyric)
-        print('Done.')
+        color.print_ok('Done.')
 
 def netease_video_download(vinfo, output_dir='.', info_only=False):
     title = "%s - %s" % (vinfo['name'], vinfo['artistName'])

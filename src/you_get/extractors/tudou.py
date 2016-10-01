@@ -87,7 +87,7 @@ def parse_plist(url):
 def tudou_download_playlist(url, output_dir = '.', merge = True, info_only = False, **kwargs):
     videos = parse_plist(url)
     for i, (title, id) in enumerate(videos):
-        print('Processing %s of %s videos...' % (i + 1, len(videos)))
+        color.print_info('Processing %s of %s videos...' % (i + 1, len(videos)))
         tudou_download_by_iid(id, title, output_dir = output_dir, merge = merge, info_only = info_only)
 
 site_info = "Tudou.com"

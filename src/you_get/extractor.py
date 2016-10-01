@@ -3,6 +3,7 @@
 from .common import match1, maybe_print, download_urls, get_filename, parse_host, set_proxy, unset_proxy
 from .common import print_more_compatible as print
 from .util import log
+from .util.color import color
 from . import json_output
 import os
 
@@ -85,26 +86,26 @@ class VideoExtractor():
             stream = self.dash_streams[stream_id]
 
         if 'itag' in stream:
-            print("    - itag:          %s" % log.sprint(stream_id, log.NEGATIVE))
+            color.print_info("    - itag:          %s" % log.sprint(stream_id, log.NEGATIVE))
         else:
-            print("    - format:        %s" % log.sprint(stream_id, log.NEGATIVE))
+            color.print_info("    - format:        %s" % log.sprint(stream_id, log.NEGATIVE))
 
         if 'container' in stream:
-            print("      container:     %s" % stream['container'])
+            color.print_info("      container:     %s" % stream['container'])
 
         if 'video_profile' in stream:
             maybe_print("      video-profile: %s" % stream['video_profile'])
 
         if 'quality' in stream:
-            print("      quality:       %s" % stream['quality'])
+            color.print_info("      quality:       %s" % stream['quality'])
 
         if 'size' in stream:
-            print("      size:          %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
+            color.print_info("      size:          %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
 
         if 'itag' in stream:
-            print("    # download-with: %s" % log.sprint("you-get --itag=%s [URL]" % stream_id, log.UNDERLINE))
+            color.print_info("    # download-with: %s" % log.sprint("you-get --itag=%s [URL]" % stream_id, log.UNDERLINE))
         else:
-            print("    # download-with: %s" % log.sprint("you-get --format=%s [URL]" % stream_id, log.UNDERLINE))
+            color.print_info("    # download-with: %s" % log.sprint("you-get --format=%s [URL]" % stream_id, log.UNDERLINE))
 
         print()
 
@@ -115,8 +116,8 @@ class VideoExtractor():
             stream = self.dash_streams[stream_id]
 
         maybe_print("    - title:         %s" % self.title)
-        print("       size:         %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
-        print("        url:         %s" % self.url)
+        color.print_info("       size:         %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
+        color.print_info("        url:         %s" % self.url)
         print()
 
     def p(self, stream_id=None):
@@ -124,39 +125,39 @@ class VideoExtractor():
         maybe_print("title:               %s" % self.title)
         if stream_id:
             # Print the stream
-            print("stream:")
+            color.print_info("stream:")
             self.p_stream(stream_id)
 
         elif stream_id is None:
             # Print stream with best quality
-            print("stream:              # Best quality")
+            color.print_info("stream:              # Best quality")
             stream_id = self.streams_sorted[0]['id'] if 'id' in self.streams_sorted[0] else self.streams_sorted[0]['itag']
             self.p_stream(stream_id)
 
         elif stream_id == []:
-            print("streams:             # Available quality and codecs")
+            color.print_info("streams:             # Available quality and codecs")
             # Print DASH streams
             if self.dash_streams:
-                print("    [ DASH ] %s" % ('_' * 36))
+                color.print_info("    [ DASH ] %s" % ('_' * 36))
                 itags = sorted(self.dash_streams,
                                key=lambda i: -self.dash_streams[i]['size'])
                 for stream in itags:
                     self.p_stream(stream)
             # Print all other available streams
-            print("    [ DEFAULT ] %s" % ('_' * 33))
+            color.print_info("    [ DEFAULT ] %s" % ('_' * 33))
             for stream in self.streams_sorted:
                 self.p_stream(stream['id'] if 'id' in stream else stream['itag'])
 
         if self.audiolang:
-            print("audio-languages:")
+            color.print_info("audio-languages:")
             for i in self.audiolang:
-                print("    - lang:          {}".format(i['lang']))
-                print("      download-url:  {}\n".format(i['url']))
+                color.print_info("    - lang:          {}".format(i['lang']))
+                color.print_info("      download-url:  {}\n".format(i['url']))
 
     def p_playlist(self, stream_id=None):
         maybe_print("site:                %s" % self.__class__.name)
-        print("playlist:            %s" % self.title)
-        print("videos:")
+        color.print_info("playlist:            %s" % self.title)
+        color.print_info("videos:")
 
     def download(self, **kwargs):
         if 'json_output' in kwargs and kwargs['json_output']:
@@ -207,16 +208,16 @@ class VideoExtractor():
                           merge=kwargs['merge'],
                           av=stream_id in self.dash_streams)
             if not kwargs['caption']:
-                print('Skipping captions.')
+                color.print_info('Skipping captions.')
                 return
             for lang in self.caption_tracks:
                 filename = '%s.%s.srt' % (get_filename(self.title), lang)
-                print('Saving %s ... ' % filename, end="", flush=True)
+                color.print_info('Saving %s ... ' % filename, end="", flush=True)
                 srt = self.caption_tracks[lang]
                 with open(os.path.join(kwargs['output_dir'], filename),
                           'w', encoding='utf-8') as x:
                     x.write(srt)
-                print('Done.')
+                color.print_ok('Done.')
 
             # For main_dev()
             #download_urls(urls, self.title, self.streams[stream_id]['container'], self.streams[stream_id]['size'])

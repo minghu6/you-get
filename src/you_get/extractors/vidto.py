@@ -16,9 +16,9 @@ def vidto_download(url, output_dir='.', merge=True, info_only=False, **kwargs):
         params[name] = value
     data = parse.urlencode(params).encode('utf-8')
     req = request.Request(url)
-    print("Please wait for 6 seconds...")
+    color.print_info("Please wait for 6 seconds...")
     time.sleep(6)
-    print("Starting")
+    color.print_info("Starting")
     new_html = request.urlopen(req, data).read().decode('utf-8', 'replace')
     new_stff = re.search('lnk_download" href="(.*?)">', new_html)
     if(new_stff):
@@ -31,7 +31,7 @@ def vidto_download(url, output_dir='.', merge=True, info_only=False, **kwargs):
         if not info_only:
             download_urls([url], title, ext, size, output_dir, merge=merge)
     else:
-        print("cannot find link, please review")
+        color.print_err("cannot find link, please review")
         pdb.set_trace()
 
 

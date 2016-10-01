@@ -8,6 +8,7 @@
 
 import struct
 from io import BytesIO
+from ..util.color import color
 
 def skip(stream, n):
     stream.seek(stream.tell() + n)
@@ -713,7 +714,7 @@ def parse_atoms(stream):
     return atoms
 
 def read_mp4(stream):
-    print(stream.name)
+    color.print_info(stream.name)
     atoms = parse_atoms(stream)
     moov = list(filter(lambda x: x.type == b'moov', atoms))
     mdat = list(filter(lambda x: x.type == b'mdat', atoms))
@@ -910,13 +911,13 @@ def concat_mp4(mp4s, output = None):
     elif os.path.isdir(output):
         output = os.path.join(output, guess_output(mp4s))
     
-    print('Merging video parts...')
+    color.print_info('Merging video parts...')
     merge_mp4s(mp4s, output)
     
     return output
 
 def usage():
-    print('Usage: [python3] join_mp4.py --output TARGET.mp4 mp4...')
+    color.print_info('Usage: [python3] join_mp4.py --output TARGET.mp4 mp4...')
 
 def main():
     import sys, getopt

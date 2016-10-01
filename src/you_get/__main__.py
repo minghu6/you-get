@@ -6,7 +6,7 @@ import platform
 import sys
 from .version import script_name, __version__
 from .util import git, log
-
+from .util.color import color
 _options = [
     'help',
     'version',
@@ -39,7 +39,8 @@ def main_dev(**kwargs):
 
     if not opts and not args:
         # Display help.
-        print(_help)
+        #print(_help)
+        color.print_info(_help)
         # Enter GUI mode.
         #from .gui import gui_main
         #gui_main()
@@ -48,7 +49,8 @@ def main_dev(**kwargs):
         for opt, arg in opts:
             if opt in ('-h', '--help'):
                 # Display help.
-                print(_help)
+                #print(_help)
+                color.print_info(_help)
 
             elif opt in ('-V', '--version'):
                 # Display version.

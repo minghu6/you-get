@@ -204,16 +204,16 @@ class Iqiyi(VideoExtractor):
                           merge=kwargs['merge'],)
 
             if not kwargs['caption']:
-                print('Skipping captions.')
+                color.print_info('Skipping captions.')
                 return
             for lang in self.caption_tracks:
                 filename = '%s.%s.srt' % (get_filename(self.title), lang)
-                print('Saving %s ... ' % filename, end="", flush=True)
+                color.print_info('Saving %s ... ' % filename, end="", flush=True)
                 srt = self.caption_tracks[lang]
                 with open(os.path.join(kwargs['output_dir'], filename),
                           'w', encoding='utf-8') as x:
                     x.write(srt)
-                print('Done.')    
+                color.print_ok('Done.')
 
 '''
         if info["code"] != "A000000":

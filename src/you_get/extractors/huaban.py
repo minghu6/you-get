@@ -77,8 +77,8 @@ def huaban_download(url, output_dir='.', **kwargs):
     if re.match(r'http://huaban\.com/boards/\d+/', url):
         huaban_download_board(url, output_dir, **kwargs)
     else:
-        print('Only board (画板) pages are supported currently')
-        print('ex: http://huaban.com/boards/12345678/')
+        color.print_warn('Only board (画板) pages are supported currently')
+        color.print_warn('ex: http://huaban.com/boards/12345678/')
 
 
 download = huaban_download

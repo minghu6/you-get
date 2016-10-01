@@ -2,6 +2,7 @@
 
 import os.path
 import subprocess
+from ..util.color import color
 
 def get_usable_rtmpdump(cmd):
     try:
@@ -37,7 +38,7 @@ def download_rtmpdump_stream(url, title, ext,params={},output_dir='.'):
 
     # cmdline.append('-y')
     # cmdline.append(playpath)
-    print("Call rtmpdump:\n"+" ".join(cmdline)+"\n")
+    color.print_info("Call rtmpdump:\n"+" ".join(cmdline)+"\n")
     subprocess.call(cmdline)
     return
 
@@ -63,7 +64,7 @@ def play_rtmpdump_stream(player, url, params={}):
     cmdline.append('-')
 
     #logging
-    print("Call rtmpdump:\n"+" ".join(cmdline)+"\n")
+    color.print_info("Call rtmpdump:\n"+" ".join(cmdline)+"\n")
 
     #call RTMPDump!
     subprocess.call(cmdline)

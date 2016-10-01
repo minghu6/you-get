@@ -27,7 +27,7 @@ context=ssl.SSLContext(ssl.PROTOCOL_TLSv1))
         password = getpass.getpass("Password: ")
     else:
         user, password = info[0], info[2]
-    print("Logging in...")
+    color.print_info("Logging in...")
     nicovideo_login(user, password)
 
     html = get_html(url) # necessary!

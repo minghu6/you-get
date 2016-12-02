@@ -155,6 +155,8 @@ class YouTube(VideoExtractor):
                 try:
                     ytplayer_config = json.loads(re.search('ytplayer.config\s*=\s*([^\n]+?});', video_page).group(1))
                     self.html5player = 'https:' + ytplayer_config['assets']['js']
+                    # Workaround: get_video_info returns bad s. Why?
+                    stream_list = ytplayer_config['args']['url_encoded_fmt_stream_map'].split(',')
                 except:
                     self.html5player = None
 
@@ -236,7 +238,7 @@ class YouTube(VideoExtractor):
                     start = '{:0>2}:{:0>2}:{:06.3f}'.format(int(h), int(m), s).replace('.', ',')
                     m, s = divmod(finish, 60); h, m = divmod(m, 60)
                     finish = '{:0>2}:{:0>2}:{:06.3f}'.format(int(h), int(m), s).replace('.', ',')
-                    content = text.firstChild.nodeValue
+                    content = unescape_html(text.firstChild.nodeValue)
 
                     srt += '%s\n' % str(seq)
                     srt += '%s --> %s\n' % (start, finish)
@@ -256,11 +258,17 @@ class YouTube(VideoExtractor):
                     burls = rep.getElementsByTagName('BaseURL')
                     dash_mp4_a_url = burls[0].firstChild.nodeValue
                     dash_mp4_a_size = burls[0].getAttribute('yt:contentLength')
+                    if not dash_mp4_a_size:
+                        try: dash_mp4_a_size = url_size(dash_mp4_a_url)
+                        except: continue
                 elif mimeType == 'audio/webm':
                     rep = aset.getElementsByTagName('Representation')[-1]
                     burls = rep.getElementsByTagName('BaseURL')
                     dash_webm_a_url = burls[0].firstChild.nodeValue
                     dash_webm_a_size = burls[0].getAttribute('yt:contentLength')
+                    if not dash_webm_a_size:
+                        try: dash_webm_a_size = url_size(dash_webm_a_url)
+                        except: continue
                 elif mimeType == 'video/mp4':
                     for rep in aset.getElementsByTagName('Representation'):
                         w = int(rep.getAttribute('width'))
@@ -269,6 +277,9 @@ class YouTube(VideoExtractor):
                         burls = rep.getElementsByTagName('BaseURL')
                         dash_url = burls[0].firstChild.nodeValue
                         dash_size = burls[0].getAttribute('yt:contentLength')
+                        if not dash_size:
+                            try: dash_size = url_size(dash_url)
+                            except: continue
                         self.dash_streams[itag] = {
                             'quality': '%sx%s' % (w, h),
                             'itag': itag,
@@ -286,6 +297,9 @@ class YouTube(VideoExtractor):
                         burls = rep.getElementsByTagName('BaseURL')
                         dash_url = burls[0].firstChild.nodeValue
                         dash_size = burls[0].getAttribute('yt:contentLength')
+                        if not dash_size:
+                            try: dash_size = url_size(dash_url)
+                            except: continue
                         self.dash_streams[itag] = {
                             'quality': '%sx%s' % (w, h),
                             'itag': itag,

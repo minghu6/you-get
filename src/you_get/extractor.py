@@ -207,8 +207,9 @@ class VideoExtractor():
                           output_dir=kwargs['output_dir'],
                           merge=kwargs['merge'],
                           av=stream_id in self.dash_streams)
-            if not kwargs['caption']:
-                color.print_info('Skipping captions.')
+
+            if 'caption' not in kwargs or not kwargs['caption']:
+                color.print_warn('Skipping captions.')
                 return
             for lang in self.caption_tracks:
                 filename = '%s.%s.srt' % (get_filename(self.title), lang)

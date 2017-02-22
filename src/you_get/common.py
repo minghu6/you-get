@@ -15,7 +15,6 @@ SITES = {
     'cbs'              : 'cbs',
     'dailymotion'      : 'dailymotion',
     'dilidili'         : 'dilidili',
-    'dongting'         : 'dongting',
     'douban'           : 'douban',
     'douyu'            : 'douyutv',
     'ehow'             : 'ehow',
@@ -40,7 +39,6 @@ SITES = {
     'iqiyi'            : 'iqiyi',
     'isuntv'           : 'suntv',
     'joy'              : 'joy',
-    'jpopsuki'         : 'jpopsuki',
     'kankanews'        : 'bilibili',
     'khanacademy'      : 'khan',
     'ku6'              : 'ku6',
@@ -63,7 +61,6 @@ SITES = {
     'pinterest'        : 'pinterest',
     'pixnet'           : 'pixnet',
     'pptv'             : 'pptv',
-    'qianmo'           : 'qianmo',
     'qq'               : 'qq',
     'quanmin'          : 'quanmin',
     'showroom-live'    : 'showroom',
@@ -73,7 +70,6 @@ SITES = {
     'soundcloud'       : 'soundcloud',
     'ted'              : 'ted',
     'theplatform'      : 'theplatform',
-    'thvideo'          : 'thvideo',
     'tucao'            : 'tucao',
     'tudou'            : 'tudou',
     'tumblr'           : 'tumblr',
@@ -132,7 +128,7 @@ fake_headers = {
     'Accept-Charset': 'UTF-8,*;q=0.5',
     'Accept-Encoding': 'gzip,deflate,sdch',
     'Accept-Language': 'en-US,en;q=0.8',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:13.0) Gecko/20100101 Firefox/13.0'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0'
 }
 
 if sys.stdout.isatty():
@@ -260,6 +256,8 @@ def undeflate(data):
 
 # DEPRECATED in favor of get_content()
 def get_response(url, faker = False):
+    logging.debug('get_response: %s' % url)
+
     # install cookies
     if cookies:
         opener = request.build_opener(request.HTTPCookieProcessor(cookies))
@@ -280,11 +278,15 @@ def get_response(url, faker = False):
 
 # DEPRECATED in favor of get_content()
 def get_html(url, encoding = None, faker = False):
+    logging.debug('get_html: %s' % url)
+
     content = get_response(url, faker).data
     return str(content, 'utf-8', 'ignore')
 
 # DEPRECATED in favor of get_content()
 def get_decoded_html(url, faker = False):
+    logging.debug('get_decoded_html: %s' % url)
+
     response = get_response(url, faker)
     data = response.data
     charset = r1(r'charset=([\w-]+)', response.headers['content-type'])
@@ -294,6 +296,8 @@ def get_decoded_html(url, faker = False):
         return data
 
 def get_location(url):
+    logging.debug('get_location: %s' % url)
+
     response = request.urlopen(url)
     # urllib will follow redirections and it's too much code to tell urllib
     # not to do that
@@ -399,6 +403,8 @@ def urls_size(urls, faker = False, headers = {}):
     return sum([url_size(url, faker=faker, headers=headers) for url in urls])
 
 def get_head(url, headers = {}, get_method = 'HEAD'):
+    logging.debug('get_head: %s' % url)
+
     if headers:
         req = request.Request(url, headers=headers)
     else:
@@ -408,6 +414,8 @@ def get_head(url, headers = {}, get_method = 'HEAD'):
     return dict(res.headers)
 
 def url_info(url, faker = False, headers = {}):
+    logging.debug('url_info: %s' % url)
+
     if faker:
         response = urlopen_with_retry(request.Request(url, headers=fake_headers))
     elif headers:
@@ -461,6 +469,8 @@ def url_info(url, faker = False, headers = {}):
 def url_locations(urls, faker = False, headers = {}):
     locations = []
     for url in urls:
+        logging.debug('url_locations: %s' % url)
+
         if faker:
             response = urlopen_with_retry(request.Request(url, headers=fake_headers))
         elif headers:

@@ -280,15 +280,11 @@ def get_response(url, faker = False):
 
 # DEPRECATED in favor of get_content()
 def get_html(url, encoding = None, faker = False):
-    logging.debug('get_html: %s' % url)
-
     content = get_response(url, faker).data
     return str(content, 'utf-8', 'ignore')
 
 # DEPRECATED in favor of get_content()
 def get_decoded_html(url, faker = False):
-    logging.debug('get_decoded_html: %s' % url)
-
     response = get_response(url, faker)
     data = response.data
     charset = r1(r'charset=([\w-]+)', response.headers['content-type'])
@@ -747,7 +743,10 @@ class DummyProgressBar:
 def get_output_filename(urls, title, ext, output_dir, merge):
     # lame hack for the --output-filename option
     global output_filename
-    if output_filename: return output_filename
+    if output_filename:
+        if ext:
+            return output_filename + '.' + ext
+        return output_filename
 
     merged_ext = ext
     if (len(urls) > 1) and merge:
@@ -1201,16 +1200,18 @@ def script_main(script_name, download, download_playlist, **kwargs):
     -s | --socks-proxy <HOST:PORT>      Use an SOCKS5 proxy for downloading.
     -t | --timeout <SECONDS>            Set socket timeout.
     -d | --debug                        Show traceback and other debug info.
+    -I | --input-file                   Read non-playlist urls from file.
     '''
 
-    short_opts = 'Vhfiuc:ndF:O:o:p:x:y:s:t:'
-    opts = ['version', 'help', 'force', 'info', 'url', 'cookies', 'no-caption', 'no-merge', 'no-proxy', 'debug', 'json', 'format=', 'stream=', 'itag=', 'output-filename=', 'output-dir=', 'player=', 'http-proxy=', 'socks-proxy=', 'extractor-proxy=', 'lang=', 'timeout=']
-    if download_playlist:
-        short_opts = 'l' + short_opts
-        opts = ['playlist'] + opts
+    short_opts = 'Vhfiuc:ndF:O:o:p:x:y:s:t:I:'
+    opts = ['version', 'help', 'force', 'info', 'url', 'cookies', 'no-caption', 'no-merge', 'no-proxy', 'debug', 'json', 'format=', 'stream=', 'itag=', 'output-filename=', 'output-dir=', 'player=', 'http-proxy=', 'socks-proxy=', 'extractor-proxy=', 'lang=', 'timeout=', 'input-file=']
+#dead code? download_playlist is a function and always True
+#if download_playlist:
+    short_opts = 'l' + short_opts
+    opts = ['playlist'] + opts
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], short_opts, opts)
+        opts, args = getopt.gnu_getopt(sys.argv[1:], short_opts, opts)
     except getopt.GetoptError as err:
         log.e(err)
         log.e("try 'you-get --help' for more options")
@@ -1236,6 +1237,8 @@ def script_main(script_name, download, download_playlist, **kwargs):
     extractor_proxy = None
     traceback = False
     timeout = 600
+    urls_from_file = []
+
     for o, a in opts:
         if o in ('-V', '--version'):
             version()
@@ -1313,12 +1316,23 @@ def script_main(script_name, download, download_playlist, **kwargs):
             lang = a
         elif o in ('-t', '--timeout'):
             timeout = int(a)
+        elif o in ('-I', '--input-file'):
+            logging.debug('you are trying to load urls from {}'.format(a))
+            if playlist:
+                log.e("reading playlist from a file is unsupported and won't make your life easier")
+                sys.exit(2)
+            with open(a, 'r') as input_file:
+                for line in input_file:
+                    url = line.strip()
+                    urls_from_file.append(url)
         else:
             log.e("try 'you-get --help' for more options")
             sys.exit(2)
-    if not args:
+
+    if not args and not urls_from_file:
         color.print_info(help)
         sys.exit()
+    args.extend(urls_from_file)
 
     if (socks_proxy):
         try:
@@ -1358,6 +1372,8 @@ def script_main(script_name, download, download_playlist, **kwargs):
         else:
             sys.exit(1)
     except UnicodeEncodeError:
+        if traceback:
+            raise
         log.e('[error] oops, the current environment does not seem to support Unicode.')
         log.e('please set it to a UTF-8-aware locale first,')
         log.e('so as to save the video (with some Unicode characters) correctly.')
